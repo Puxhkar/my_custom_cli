@@ -41,43 +41,63 @@ const commander_1 = require("commander");
 const axios_1 = __importDefault(require("axios"));
 const chalk_1 = __importDefault(require("chalk"));
 const os = __importStar(require("os"));
+// ==========================================
+// VALIDATION LAYER
+// ==========================================
+class Validator {
+    static isNumber(val) {
+        return !isNaN(parseFloat(val));
+    }
+    static isValidUsername(username) {
+        // GitHub usernames can only contain alphanumeric characters or hyphens
+        const regex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+        return regex.test(username);
+    }
+}
+// ==========================================
+// COMMAND CLASSES
+// ==========================================
 class GreetCommand {
-    execute(name) {
-        console.log(chalk_1.default.green(`Hello, ${name || 'user'}! Welcome to mycli!`));
+    execute(name, options) {
+        let greeting = `Hello, ${name || 'user'}! Welcome to mycli!`;
+        if (options.uppercase)
+            greeting = greeting.toUpperCase();
+        console.log(chalk_1.default.green(greeting));
     }
 }
 class AddCommand {
     execute(num1, num2) {
-        const a = parseFloat(num1), b = parseFloat(num2);
-        if (isNaN(a) || isNaN(b))
-            return console.log(chalk_1.default.red('Both arguments must be numbers.'));
-        console.log(chalk_1.default.yellow(`The sum is ${a + b}`));
+        if (!Validator.isNumber(num1) || !Validator.isNumber(num2)) {
+            return console.log(chalk_1.default.red('Validation Error: Both arguments must be valid numbers.'));
+        }
+        console.log(chalk_1.default.yellow(`The sum is ${parseFloat(num1) + parseFloat(num2)}`));
     }
 }
 class SubtractCommand {
     execute(num1, num2) {
-        const a = parseFloat(num1), b = parseFloat(num2);
-        if (isNaN(a) || isNaN(b))
-            return console.log(chalk_1.default.red('Both arguments must be numbers.'));
-        console.log(chalk_1.default.yellow(`The difference is ${a - b}`));
+        if (!Validator.isNumber(num1) || !Validator.isNumber(num2)) {
+            return console.log(chalk_1.default.red('Validation Error: Both arguments must be valid numbers.'));
+        }
+        console.log(chalk_1.default.yellow(`The difference is ${parseFloat(num1) - parseFloat(num2)}`));
     }
 }
 class MultiplyCommand {
     execute(num1, num2) {
-        const a = parseFloat(num1), b = parseFloat(num2);
-        if (isNaN(a) || isNaN(b))
-            return console.log(chalk_1.default.red('Both arguments must be numbers.'));
-        console.log(chalk_1.default.yellow(`The product is ${a * b}`));
+        if (!Validator.isNumber(num1) || !Validator.isNumber(num2)) {
+            return console.log(chalk_1.default.red('Validation Error: Both arguments must be valid numbers.'));
+        }
+        console.log(chalk_1.default.yellow(`The product is ${parseFloat(num1) * parseFloat(num2)}`));
     }
 }
 class DivideCommand {
     execute(num1, num2) {
-        const a = parseFloat(num1), b = parseFloat(num2);
-        if (isNaN(a) || isNaN(b))
-            return console.log(chalk_1.default.red('Both arguments must be numbers.'));
+        if (!Validator.isNumber(num1) || !Validator.isNumber(num2)) {
+            return console.log(chalk_1.default.red('Validation Error: Both arguments must be valid numbers.'));
+        }
+        const b = parseFloat(num2);
         if (b === 0)
-            return console.log(chalk_1.default.red('Division by zero is not allowed.'));
-        console.log(chalk_1.default.yellow(`The quotient is ${a / b}`));
+            return console.log(chalk_1.default.red('Validation Error: Division by zero is not allowed.'));
+        console.log(chalk_1.default.yellow(`The quotient is ${parseFloat(num1) / b}`));
     }
 }
 class JokeCommand {
@@ -97,6 +117,9 @@ class JokeCommand {
 class GitHubCommand {
     async execute(username) {
         var _a, _b;
+        if (!Validator.isValidUsername(username)) {
+            return console.log(chalk_1.default.red(`Validation Error: "${username}" is not a valid GitHub username format.`));
+        }
         try {
             const { data } = await axios_1.default.get(`https://api.github.com/users/${encodeURIComponent(username)}`);
             console.log(chalk_1.default.green(`\nGitHub User: ${data.login}`));
@@ -180,8 +203,9 @@ const program = new commander_1.Command();
 program.name('mycli').version('1.0.0', '-v, --version', 'Output the current version');
 program
     .command('greet <name>')
-    .description('Greet a user by name')
-    .action((name) => new GreetCommand().execute(name));
+    .description('Greet a user by name (Supports flags)')
+    .option('-u, --uppercase', 'Force the greeting to be uppercase')
+    .action((name, options) => new GreetCommand().execute(name, options));
 program
     .command('add <num1> <num2>')
     .description('Add two numbers')
