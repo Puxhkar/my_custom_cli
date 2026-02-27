@@ -21,6 +21,9 @@ A simple, interactive Command Line Interface (CLI) built with Node.js and TypeSc
 | `quote` | `mycli quote` | Fetches a random inspirational quote. |
 | `weather` | `mycli weather <city>` | Fetches real-time weather conditions for a city. |
 | `sysinfo` | `mycli sysinfo` | Displays basic OS and Memory information. |
+| `flip` | `mycli flip` | Flips a coin (Heads or Tails). |
+| `roll` | `mycli roll` | Rolls a standard 6-sided dice. |
+| `base64` | `mycli base64 <encode/decode> <text>`| Encodes or decodes text to/from Base64. |
 
 ## 🎯 Example
 ```bash

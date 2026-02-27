@@ -116,6 +116,34 @@ class SysinfoCommand implements ICommand {
     }
 }
 
+class CoinFlipCommand implements ICommand {
+    execute() {
+        const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        console.log(chalk.yellow(`The coin landed on: ${chalk.bold(result)}`));
+    }
+}
+
+class RollDiceCommand implements ICommand {
+    execute() {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        console.log(chalk.yellow(`You rolled a ${chalk.bold(roll)}`));
+    }
+}
+
+class Base64Command implements ICommand {
+    execute(action: string, text: string) {
+        if (action === 'encode') {
+            const encoded = Buffer.from(text).toString('base64');
+            console.log(chalk.green(`Encoded: ${encoded}`));
+        } else if (action === 'decode') {
+            const decoded = Buffer.from(text, 'base64').toString('utf8');
+            console.log(chalk.green(`Decoded: ${decoded}`));
+        } else {
+            console.log(chalk.red('Error: Action must be "encode" or "decode"'));
+        }
+    }
+}
+
 const program = new Command();
 program.name('mycli').version('1.0.0', '-v, --version', 'Output the current version');
 
@@ -168,5 +196,20 @@ program
     .command('sysinfo')
     .description('Show system and OS usage stats')
     .action(() => new SysinfoCommand().execute());
+
+program
+    .command('flip')
+    .description('Flip a coin - heads or tails?')
+    .action(() => new CoinFlipCommand().execute());
+
+program
+    .command('roll')
+    .description('Roll a dice (1-6)')
+    .action(() => new RollDiceCommand().execute());
+
+program
+    .command('base64 <action> <text>')
+    .description('Encode or decode Base64 strings (action: encode|decode)')
+    .action((action: string, text: string) => new Base64Command().execute(action, text));
 
 program.parse();
